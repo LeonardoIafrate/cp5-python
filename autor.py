@@ -12,8 +12,8 @@ def cadastrar_autor():
     nome_autor = input("Digite o nome do autor: ")
     cur.execute(
     """
-    INSERT INTO AUTOR(ID_autor, Nome)
-    VALUES (:id, :nome)
+    INSERT INTO AUTOR(Nome)
+    VALUES (:nome)
     """, {"nome": nome_autor}
     )
     con.commit()
