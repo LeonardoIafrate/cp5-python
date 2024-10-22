@@ -24,15 +24,16 @@ def adiciona_livro():
 
 
 def cadastrar_livro():
-    Titulo_livro = input("Digite o título do livro: ")
-    Qnt_pag = input("Digite a quantidade de páginas do livro: ")
-    ID_autor = input("Digite o ID do autor: ")
-    Qnt_estoque = input("Digite a quantidade do livro no estoque: ")
+    titulo_livro = input("Digite o título do livro: ")
+    qnt_pag = input("Digite a quantidade de páginas do livro: ")
+    id_autor = input("Digite o ID do autor: ")
+    qnt_estoque = input("Digite a quantidade do livro no estoque: ")
+    preco = input("Digite o preço do livro: ")
     cur.execute(
     """
-    INSERT INTO LIVRO( Titulo, Qnt_pag, ID_autor, Qnt_estoque)
-    VALUES(: :titulo_livro, :qnt_pag, :id_autor, :qnt_estoque)
-    """,titulo_livro = Titulo_livro, qnt_pag = Qnt_pag, id_autor = ID_autor, qnt_estoque = Qnt_estoque 
+    INSERT INTO LIVRO( Titulo, Qnt_pag, ID_autor, Qnt_estoque, Preco)
+    VALUES(: :titulo_livro, :qnt_pag, :id_autor, :qnt_estoque, :preco)
+    """,{"titulo_livro": titulo_livro, "qnt_pag": qnt_pag, "id_autor":id_autor, "qnt_estoque": qnt_estoque} 
     )
 
 
@@ -43,11 +44,12 @@ def altera_livro():
     qnt_pag = input("Digite a atual quantidade de páginas do livro: ")
     id_autor = input("Digite o atual id do autor: ")
     qnt_estoque = input("Digite a atual quantidade do livro no estoque: ")
+    preco = input("Digite o atual valor do preço: ")
     cur.execute(
     """
-    UPDATE LIVRO SET Titulo = :titulo, Qnt_pag = :qnt_pag, ID_autor = id_autor, Qnt_estoque = qnt_estoque
+    UPDATE LIVRO SET Titulo = :titulo, Qnt_pag = :qnt_pag, ID_autor = :id_autor, Qnt_estoque = :qnt_estoque, Preco = :preco
     WHERE ID_livro = :id_livro
-    """, {"id_livro": id_livro,"titulo": titulo, "qnt_pagina": qnt_pag, "id_autor": id_autor, "qnt_estoque": qnt_estoque}
+    """, {"id_livro": id_livro,"titulo": titulo, "qnt_pagina": qnt_pag, "id_autor": id_autor, "qnt_estoque": qnt_estoque, "preco": preco}
     )
     con.commit()
 
