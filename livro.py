@@ -1,3 +1,5 @@
+# alteraços concluidas
+
 import json
 import oracledb
 import sqlalchemy
