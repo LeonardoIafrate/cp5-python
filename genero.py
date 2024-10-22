@@ -6,35 +6,54 @@ from connection import connection
 con = connection
 cur = con.cursor()
 
+
 def cadastra_genero():
-    genero_livro = input("Digite o gênero que deseja cadastrar: ")
-    cur.execute(
-    """
-    INSERT INTO GENERO(Genero)
-    VALUES(:genero)
-    """, genero = genero_livro
-    )
-    con.commit()
-
-def altera_genero():
-    id_genero = input("Digite o id do gênero que deseja alterar: ")
-    genero = input("Digite o gênero: ")
-    cur.execute(
-    """
-    UPDATE GENERO SET Genero = :genero WHERE ID_genero = :id_genero
-    """, {"genero": genero, "id_genero": id_genero}
-    )
-    con.commit()
-
-def exclui_genero():
-    id_genero = input("Digite o id do gênero que deseja excluir: ")
-    genero = cur.execute("SELECT GENERO FROM GENERO WHERE ID_genero = :id_genero", {"id_genero":id_genero})
-    confirmacao = input(f"Tem certeza que deseja excluir o genero {genero}? (S/N)").upper
-    if confirmacao == "S":
+    try:
+        genero_livro = input("Digite o gênero que deseja cadastrar: ")
         cur.execute(
         """
-        DELETE FROM GENERO WHERE ID_genero = :id_genero
-        """, {"id_genero": id_genero})
+        INSERT INTO GENERO(Genero)
+        VALUES(:genero)
+        """, genero = genero_livro
+        )
         con.commit()
-    elif confirmacao == "N":
-        print("Operação cancelada!")
+    except oracledb.IntegrityError:
+        print("Genero já cadastrado!")
+
+
+def altera_genero():
+    try:
+        genero = input("Digite o gênero: ")
+        genero_alterado = input("Digite o gênero com a alteração: ")
+        cur.execute(
+        """
+        UPDATE GENERO SET Genero = :genero_alterado WHERE Genero = :genero
+        """, {"genero": genero, "genero_alterado": genero_alterado}
+        )
+        if cur.rowcount == 0:
+            raise KeyError(f"O gênero '{genero}' não está cadastrado na tabela.")
+        con.commit()
+        print(f"Gênero '{genero_alterado}' alterado com sucesso!")
+    except KeyError as ke:
+        print(f"Erro ao alterar gênero: ", ke)
+
+
+
+def exclui_genero():
+    try:
+        genero = input("Digite o gênero que deseja excluir: ")
+        confirmacao = input(f"Tem certeza que deseja excluir o genero {genero}? (S/N)").upper
+        cur.execute("SELECT GENERO FROM GENERO WHERE Genero = :genero", {"genero": genero})
+        listar_genero = cur.fetchone()
+        if listar_genero:
+            if confirmacao == "S":
+                cur.execute(
+                """
+                DELETE FROM GENERO WHERE Genero = :genero
+                """, {"genero": genero})
+                con.commit()
+            elif confirmacao == "N":
+                print("Operação cancelada!")
+        raise KeyError("Gênero não cadastrado")
+    except KeyError as e:
+        print("Erro ao excluir o gênero: ", e)

@@ -3,8 +3,8 @@ import oracledb
 import sqlalchemy
 from connection import *
 
-def cadastrae_venda():
-    
+def cadastrar_venda():
+    print()
     #   titulo_livro = input("Digite o título do livro: ")
     # qnt_pag = input("Digite a quantidade de páginas do livro: ")
     # id_autor = input("Digite o ID do autor: ")
