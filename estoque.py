@@ -17,6 +17,7 @@ def adiciona_estoque():
     )
     con.commit()
 
+
 def remove_estoque():
     rmv_qnt = input("Digite a quantidade a ser removida do estoque: ")
     id_livro = input("Digite o ID do livro a ser removido: ")

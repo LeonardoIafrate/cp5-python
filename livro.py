@@ -23,7 +23,6 @@ def adiciona_livro():
         print("Erro", e)
 
 
-
 def cadastrar_livro():
     Titulo_livro = input("Digite o título do livro: ")
     Qnt_pag = input("Digite a quantidade de páginas do livro: ")
@@ -36,15 +35,6 @@ def cadastrar_livro():
     """,titulo_livro = Titulo_livro, qnt_pag = Qnt_pag, id_autor = ID_autor, qnt_estoque = Qnt_estoque 
     )
 
-def cadastra_genero():
-    ID_genero = input("Digite o ID do livro: ")
-    genero_livro = input("Digite o gênero que deseja cadastrar: ")
-    cur.execute(
-    """
-    INSERT INTO GENERO(ID_genero, Genero)
-    VALUES(id_genero, :genero)
-    """, id_genero = ID_genero, genero = genero_livro
-    )
 
 def altera_livro():
     id_livro = input("Digite o id do livro que deseja alterar: ")
@@ -59,6 +49,8 @@ def altera_livro():
     WHERE ID_livro = :id_livro
     """, {"id_livro": id_livro,"titulo": titulo, "qnt_pagina": qnt_pag, "id_autor": id_autor, "qnt_estoque": qnt_estoque}
     )
+    con.commit()
+
 
 def deleta_livro():
     id_livro = input("Digite o id do livro que deseja excluir: ")

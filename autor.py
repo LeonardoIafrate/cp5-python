@@ -34,7 +34,8 @@ def altera_autor():
 
 def exclui_autor():
     id_autor = input("Digite o ID do autor: ")
-    confirmacao = input("Você tem certeza que deseja excluir o autor? (S/N)").upper()
+    nome_autor = cur.execute("SELECT NOME FROM AUTOR WHERE ID_AUTOR = :id_autor", {"id_autor": id_autor})
+    confirmacao = input(f"Você tem certeza que deseja excluir o autor {nome_autor}? (S/N)").upper()
     if confirmacao == "S":
         cur.execute("DELETE FROM AUTOR WHERE ID_autor = :id_autor", id_autor)
     elif confirmacao == "N":
