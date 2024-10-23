@@ -25,6 +25,18 @@ def adiciona_quantidade(id_livro, qnt):
         con.commit()
         print("Quantidade adicionada com sucesso!")
 
+def remove_quantidade(id_livro,qnt):
+    try:
+        cur.execute(
+            """
+            UPDATE ESTOQUE SET Qnt_estoque = (Qnt_estoque - :qnt) WHERE ID_livro = :id_livro 
+            """, {"qnt": qnt, "id_livro": id_livro}
+        )
+        con.commit()
+        print("Quantidade removida com sucesso!")
+    except oracledb.IntegrityError as e:
+        print("Erro ao remover estoque: um livro não pode ter uma quantidade negativa")
+
 def adiciona_estoque():
     try:
         id_livro = input("Digite o ID do livro a ser adicionado: ")
