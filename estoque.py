@@ -68,19 +68,17 @@ def adiciona_estoque():
 
 def remove_estoque():
     try:
-        rmv_qnt = input("Digite a quantidade a ser removida do estoque: ")
         id_livro = input("Digite o ID do livro a ser removido: ")
-        cur.execute(
-        """
-        UPDATE ESTOQUE SET (Qnt_estoque - :rmv_estoque) WHERE ID_livro = :id_livro   
-        """, {"rmv_qnt": rmv_qnt, "id_livro": id_livro}
-        )
-        if cur.rowcount == 0:
+        
+        cur.execute("SELECT ID_livro FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
+        livro_cadastrado = cur.fetchone()
+        
+        if livro_cadastrado:
+            qnt = input("Digite a quantidade a ser removida do estoque: ")
+            remove_quantidade(id_livro,qnt)
+        else:
             raise KeyError("Nenhum livro possui esse ID")
-        elif cur.rowcount < 0:
-            con.commit()
-        raise oracledb.IntegrityError("A quantidade de livro no estoque não pode ser menor do que 0")
     except KeyError as e:
         print("Erro ao remover estoque: ", e)
     except oracledb.IntegrityError as e:
-        print("Erro ao remover estoque: ", e)
+        print("Erro ao remover estoque: ",e)
