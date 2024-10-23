@@ -53,7 +53,6 @@ def adiciona_estoque():
     except KeyError as e:
         print("Erro ao adicionar estoque: ", e)
 
-adiciona_estoque()
 
 def remove_estoque():
     try:
