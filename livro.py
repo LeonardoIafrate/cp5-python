@@ -42,8 +42,6 @@ def cadastrar_livro():
     except oracledb.DatabaseError as e:
         print("Erro ao cadastrar livro", e)
 
-cadastrar_livro()
-
 
 def altera_livro():
     try:
