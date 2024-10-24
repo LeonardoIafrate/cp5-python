@@ -35,3 +35,14 @@ async def mostra_livro(titulo_livro : str):
     else:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     
+
+@app.post("/cadastrar-livro/")
+async def cadastrar_novo_livro(livro: Livro):
+    resultado = cadastrar_livro(
+        livro.titulo_livro,
+        livro.qnt_pag,
+        livro.id_autor,
+        livro.preco,
+        livro.genero
+    )
+    return resultado
