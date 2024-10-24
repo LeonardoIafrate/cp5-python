@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from bd_livraria.connection import *
-from bd_livraria.livro import adiciona_livro, altera_livro, deleta_livro
+from bd_livraria.livro import cadastrar_livro, altera_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
 from bd_livraria.estoque import adiciona_estoque, remove_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
