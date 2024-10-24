@@ -1,7 +1,7 @@
 import json
 import oracledb
 import sqlalchemy
-from connection import *
+from bd_livraria.connection import *
 
 con = connection
 

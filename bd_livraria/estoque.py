@@ -1,11 +1,9 @@
 import json
 import oracledb
 import sqlalchemy
-from connection import *
+from bd_livraria.connection import *
 
 con = connection
-cur = con.cursor()
-
 
 def total_estoque():
     cur.execute("SELECT SUM(Qnt_estoque) FROM ESTOQUE")

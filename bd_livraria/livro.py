@@ -3,7 +3,8 @@
 import json
 import oracledb
 import sqlalchemy
-from autor import *
+# from autor import *
+from bd_livraria.autor import *
 
 def adiciona_livro():
     try:
@@ -25,13 +26,8 @@ def adiciona_livro():
         print("Erro", e)
 
 
-def cadastrar_livro():
+def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float, genero: str):
     try:
-        titulo_livro = input("Digite o título do livro: ")
-        qnt_pag = input("Digite a quantidade de páginas do livro: ")
-        id_autor = input("Digite o ID do autor: ")
-        preco = input("Digite o preço do livro: ")
-        genero = input("Digite o gênero do livro: ")
         cur.execute(
         """
         INSERT INTO LIVRO(Titulo, Qnt_pag, ID_autor, Preco, Genero)
