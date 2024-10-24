@@ -2,28 +2,8 @@
 
 import json
 import oracledb
-import sqlalchemy
-# from autor import *
 from bd_livraria.autor import *
 
-def adiciona_livro():
-    try:
-        autor_cadastrado = input("O autor do livro já possuí cadastro? (S/N) \n").upper()
-        if autor_cadastrado == "S":
-            sabe_ID = input("Você já sabe o ID do autor? (S/N) \n").upper()
-            if sabe_ID == "S":
-                cadastrar_livro()
-            elif sabe_ID == "N":
-                mostra_autor()
-                cadastrar_livro()
-            raise ValueError("Opção inválida. Tente novamente.")
-        elif autor_cadastrado == "N":
-            cadastrar_autor()
-            mostra_autor()
-            cadastrar_livro()
-        raise ValueError("Opção inválida. Tente novamente.")
-    except ValueError as e:
-        print("Erro", e)
 
 
 def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float, genero: str):
@@ -35,10 +15,11 @@ def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float
         """,{"titulo_livro": titulo_livro, "qnt_pag": qnt_pag, "id_autor":id_autor, "preco": preco, "genero": genero} 
         )
         con.commit()
+        return {"Message": "Livro cadastrado com sucesso!"}
     except oracledb.DatabaseError as e:
-        print("Erro ao cadastrar livro", e)
+        return {"Error": f"Erro ao cadastrar o livro: {str(e)}"}
 
-
+        
 def altera_livro():
     try:
         id_livro = input("Digite o id do livro que deseja alterar: ")
