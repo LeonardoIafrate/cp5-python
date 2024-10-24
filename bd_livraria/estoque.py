@@ -80,5 +80,3 @@ def remove_estoque():
             raise KeyError("Nenhum livro possui esse ID")
     except KeyError as e:
         print("Erro ao remover estoque: ", e)
-    except oracledb.IntegrityError as e:
-        print("Erro ao remover estoque: ",e)
