@@ -1,9 +1,7 @@
-# alteraços concluidas
-
 import json
 import oracledb
 from bd_livraria.autor import *
-
+from typing import Optional
 
 
 def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float, genero: str):
@@ -20,26 +18,39 @@ def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float
         return {"Error": f"Erro ao cadastrar o livro: {str(e)}"}
 
         
-def altera_livro():
+def altera_livro(id_livro: int, titulo: Optional[str], qnt_pag: Optional[int], id_autor: Optional[int], preco: Optional[float], genero: Optional[str]):
     try:
-        id_livro = input("Digite o id do livro que deseja alterar: ")
-        print("Se não quiser alterar as informações a seguir, copie a informação atual")
-        titulo = input("Digite o atual titulo do livro: ")
-        qnt_pag = input("Digite a atual quantidade de páginas do livro: ")
-        id_autor = input("Digite o atual id do autor: ")
-        qnt_estoque = input("Digite a atual quantidade do livro no estoque: ")
-        preco = input("Digite o atual valor do preço: ")
-        cur.execute(
-        """
-        UPDATE LIVRO SET Titulo = :titulo, Qnt_pag = :qnt_pag, ID_autor = :id_autor, Qnt_estoque = :qnt_estoque, Preco = :preco
-        WHERE ID_livro = :id_livro
-        """, {"id_livro": id_livro,"titulo": titulo, "qnt_pagina": qnt_pag, "id_autor": id_autor, "qnt_estoque": qnt_estoque, "preco": preco}
-        )
-        if cur.rowcount == 0:
-            raise KeyError("O livro não está cadastrado na tabela.")
+        alteracoes = []
+        parametros = {"id_livro": id_livro}
+
+        if titulo != None:
+            alteracoes.append("Titulo = :titulo")
+            parametros["titulo"] = titulo
+
+        if qnt_pag != None:
+            alteracoes.append("Qnt_pag = :qnt_pag")
+            parametros["qnt_pag"] = qnt_pag
+
+        if id_autor != None:
+            alteracoes.append("ID_autor = :id_autor")
+            parametros["id_autor"] = id_autor
+
+        if preco != None:
+            alteracoes.append("Preco = :preco")
+            parametros["preco"] = preco
+
+        if genero != None:
+            alteracoes.append("Genero = :genero")
+            parametros["genero"] = genero
+
+        query = f"UPDATE LIVRO SET {', '.join(alteracoes)} WHERE ID_livro = :id_livro"
+
+        cur.execute(query, parametros)
         con.commit()
-    except KeyError as e:
-        print("Erro ao alterar o livro: ", e)
+        return{"Message": "Livro alterado com sucesso"}
+    
+    except KeyError:
+        return {"Message": f"Erro ao alterar o livro: ID não encontrado"}
 
 
 def deleta_livro():
