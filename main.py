@@ -24,7 +24,7 @@ class UpdateLivro(BaseModel):
     genero: Optional[str] = None
 
 class Autor(BaseModel):
-    nome_autor: str
+    nome: str
 
 
 @app.get("/get-livro/{id_livro}")
@@ -127,7 +127,7 @@ async def get_autor(id_autor: int):
         }
         return autor_dict
     else:
-        raise HTTPException(status_code=404, detail="Livro não encontrado")
+        raise HTTPException(status_code=404, detail="Autor não encontrado")
     
 
 @app.get("/get-author/{nome_autor}")
@@ -148,3 +148,9 @@ async def mostra_autor(nome_autor: str):
         return {"Autores": autores_encontrados}
     except HTTPException as e:
         return {"status_code": "500", "detail": f"Autor não encontrado {str(e)}"}
+    
+
+@app.put("/update-autor/{id_autor}")
+async def update_autor(id_autor: int, autor: Autor):
+    resultado = altera_autor(id_autor, autor.nome )
+    return resultado
