@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 import json
 import oracledb
 import sqlalchemy
@@ -12,42 +13,32 @@ def total_estoque():
 
 
 def adiciona_quantidade(id_livro, qnt):
-    cur.execute(
-        """
-        UPDATE ESTOQUE SET Qnt_estoque = Qnt_estoque + :add_qnt WHERE ID_livro = :id_livro 
-        """, {"add_qnt": qnt, "id_livro": id_livro}
-    )
-    if total_estoque() > 25000:
-        raise ValueError("A capacidade máxima do estoque é de 25000")
+    if (total_estoque() + qnt) > 25000:
+        raise HTTPException(status_code=400, detail="O limite do estoque é de 25000")
     else:
-        con.commit()
-        print("Quantidade adicionada com sucesso!")
-
-def remove_quantidade(id_livro,qnt):
-    try:
         cur.execute(
             """
-            UPDATE ESTOQUE SET Qnt_estoque = (Qnt_estoque - :qnt) WHERE ID_livro = :id_livro 
-            """, {"qnt": qnt, "id_livro": id_livro}
+            UPDATE ESTOQUE SET Qnt_estoque = Qnt_estoque + :add_qnt WHERE ID_livro = :id_livro 
+            """, {"add_qnt": qnt, "id_livro": id_livro}
         )
         con.commit()
-        print("Quantidade removida com sucesso!")
-    except oracledb.IntegrityError as e:
-        print("Erro ao remover estoque: um livro não pode ter uma quantidade negativa")
+        return {"Message": "Quantidade adicionada com sucesso!"}
 
-def adiciona_estoque():
+
+def adiciona_estoque(id_livro: int, qnt: int):
+    cur.execute("SELECT ID_livro FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
+    livro_cadastrado = cur.fetchone()
+
+    if livro_cadastrado is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+
     try:
-        id_livro = input("Digite o ID do livro a ser adicionado: ")
-        
-        cur.execute("SELECT ID_livro FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
-        livro_cadastrado = cur.fetchone()
-
         if livro_cadastrado:
             cur.execute("SELECT Qnt_estoque FROM ESTOQUE WHERE ID_livro = :id_livro", {"id_livro": id_livro})
             livro_no_estoque = cur.fetchone()
             if livro_no_estoque:
-                qnt = input("Digite a quantidade a ser adicionada ao estoque: ")
                 adiciona_quantidade(id_livro, qnt)
+                return {"Message": "Quantidade adicionada com sucesso!"}
             else:
                 cur.execute(
                 """
@@ -56,25 +47,39 @@ def adiciona_estoque():
                 """, {"id_livro": id_livro}
                 )
                 con.commit()
-                qnt = input("Digite a quantidade a ser adicionada ao estoque: ")
                 adiciona_quantidade(id_livro, qnt)
-        else:
-            raise KeyError("Nenhum livro possui esse ID")
+                return {"Message": "Quantidade adicionada com sucesso!"}
     except KeyError as e:
         print("Erro ao adicionar estoque: ", e)
 
 
-def remove_estoque():
-    try:
-        id_livro = input("Digite o ID do livro a ser removido: ")
-        
-        cur.execute("SELECT ID_livro FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
-        livro_cadastrado = cur.fetchone()
-        
+def remove_quantidade(id_livro: int, qnt: int):
+    cur.execute("SELECT Qnt_estoque FROM ESTOQUE WHERE ID_livro = :id_livro", {"id_livro": id_livro})
+    quantidade_atual = cur.fetchone()[0]
+    
+    if (quantidade_atual - qnt) < 0:
+        raise HTTPException(status_code=400, detail="Um livro não pode ter uma quantidade negativa no estoque")
+    else:
+        cur.execute(
+        """
+        UPDATE ESTOQUE SET Qnt_estoque = (Qnt_estoque - :rmv_qnt) WHERE ID_livro = :id_livro
+        """, { "id_livro": id_livro, "rmv_qnt": qnt})
+        con.commit()
+        return {"Message": "Quantidade removida com sucesso!"}
+    
+    
+
+
+def remove_estoque(id_livro: int, qnt: int):
+    cur.execute("SELECT ID_livro FROM ESTOQUE WHERE ID_livro = :id_livro", {"id_livro": id_livro})
+    livro_cadastrado = cur.fetchone()
+    
+    if livro_cadastrado is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    
+    try:    
         if livro_cadastrado:
-            qnt = input("Digite a quantidade a ser removida do estoque: ")
             remove_quantidade(id_livro,qnt)
-        else:
-            raise KeyError("Nenhum livro possui esse ID")
+            return{"Message": "Quantidade removida com sucesso"}
     except KeyError as e:
-        print("Erro ao remover estoque: ", e)
+        return{"Error": f"Erro ao remover do estoque, {str(e)}"}

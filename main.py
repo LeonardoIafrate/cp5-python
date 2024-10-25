@@ -154,3 +154,21 @@ async def mostra_autor(nome_autor: str):
 async def update_autor(id_autor: int, autor: Autor):
     resultado = altera_autor(id_autor, autor.nome )
     return resultado
+
+#colocar o altera autor aqui e apagar comentario dps
+
+#####
+
+#colocar exclui autor aqui e apagar comentario dps
+
+###
+
+@app.put("/adiciona-estoque/{id_livro}")
+async def adiciona_ao_estoque(id_livro: int, qnt: int):
+    resultado = adiciona_estoque(id_livro, qnt)
+    return resultado
+
+@app.put("/remove-estoque/{id_livro}")
+async def remove_do_estoque(id_livro: int, qnt: int):
+    resultado = remove_estoque(id_livro, qnt)
+    return resultado
