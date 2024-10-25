@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from bd_livraria.connection import *
-from bd_livraria.livro import cadastrar_livro, altera_livro, deleta_livro
+from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
 from bd_livraria.estoque import adiciona_estoque, remove_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
@@ -23,10 +23,13 @@ class UpdateLivro(BaseModel):
     preco: Optional[float] = None
     genero: Optional[str] = None
 
-@app.get("/get-livro/{titulo_livro}")
-async def mostra_livro(titulo_livro : str):
-    
-    cur.execute("SELECT ID_livro, Titulo, Qnt_pag, ID_autor, Preco, Genero FROM LIVRO WHERE Titulo = :titulo", {"titulo": titulo_livro})
+class Autor(BaseModel):
+    nome_autor: str
+
+
+@app.get("/get-livro/{id_livro}")
+async def get_livro(id_livro: int):
+    cur.execute("SELECT * FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
     livro = cur.fetchone()
 
     if livro:
@@ -41,6 +44,30 @@ async def mostra_livro(titulo_livro : str):
         return livro_dict
     else:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
+
+
+@app.get("/get-book/{titulo_livro}")
+async def mostra_livro(titulo_livro : str):
+    titulo = f"%{titulo_livro.upper()}%"
+
+    try:
+        cur.execute("SELECT * FROM LIVRO WHERE Titulo LIKE :titulo", {"titulo": titulo})
+        livros = cur.fetchall()
+
+        livros_encontrados = []
+        for livro in livros:
+            livro_dict = {
+                "ID do livro": livro[0],
+                "Título do livro": livro[1],
+                "Quantidade de páginas": livro[2],
+                "ID do autor": livro[3],
+                "Preço do livro": livro[4],
+                "Gênero do livro": livro[5]
+            }
+            livros_encontrados.append(livro_dict)
+        return {"Livros": livros_encontrados}
+    except HTTPException as e:
+        return{"status_code": "500", "detail": f"Erro ao buscar livro: {str(e)}"}
     
 
 @app.post("/cadastrar-livro/")
@@ -82,3 +109,42 @@ async def update_livro(id_livro: int, livro: UpdateLivro):
         return {"Message": "Livro alterado com sucesso!"}
     except Exception as e:
         return {"Message": "Erro ao alterar livro", "Error": str(e)}
+    
+#colocar a parte do delet aqui
+
+
+######
+
+
+@app.get("/get-autor/{id_autor}")
+async def get_autor(id_autor: int):
+    cur.execute("SELECT * FROM AUTOR WHERE ID_autor = :id_autor", {"id_autor": id_autor})
+    autor = cur.fetchone()
+    if autor:
+        autor_dict = {
+            "ID do autor": autor[0],
+            "Nome do autor": autor[1],
+        }
+        return autor_dict
+    else:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    
+
+@app.get("/get-author/{nome_autor}")
+async def mostra_autor(nome_autor: str):
+    nome = f"%{nome_autor.upper()}%"
+    
+    try:
+        cur.execute("SELECT * FROM AUTOR WHERE Nome LIKE :nome", {"nome": nome})
+        autores = cur.fetchall()
+
+        autores_encontrados = []
+        for autor in autores:
+            autor_dict = {
+                "ID do autor": autor[0],
+                "Nome do autor": autor[1]
+            }
+            autores_encontrados.append(autor_dict)
+        return {"Autores": autores_encontrados}
+    except HTTPException as e:
+        return {"status_code": "500", "detail": f"Autor não encontrado {str(e)}"}

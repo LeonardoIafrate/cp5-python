@@ -18,39 +18,39 @@ def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float
         return {"Error": f"Erro ao cadastrar o livro: {str(e)}"}
 
         
-def altera_livro(id_livro: int, titulo: Optional[str], qnt_pag: Optional[int], id_autor: Optional[int], preco: Optional[float], genero: Optional[str]):
-    try:
-        alteracoes = []
-        parametros = {"id_livro": id_livro}
+# def altera_livro(id_livro: int, titulo: Optional[str], qnt_pag: Optional[int], id_autor: Optional[int], preco: Optional[float], genero: Optional[str]):
+#     try:
+#         alteracoes = []
+#         parametros = {"id_livro": id_livro}
 
-        if titulo != None:
-            alteracoes.append("Titulo = :titulo")
-            parametros["titulo"] = titulo
+#         if titulo != None:
+#             alteracoes.append("Titulo = :titulo")
+#             parametros["titulo"] = titulo
 
-        if qnt_pag != None:
-            alteracoes.append("Qnt_pag = :qnt_pag")
-            parametros["qnt_pag"] = qnt_pag
+#         if qnt_pag != None:
+#             alteracoes.append("Qnt_pag = :qnt_pag")
+#             parametros["qnt_pag"] = qnt_pag
 
-        if id_autor != None:
-            alteracoes.append("ID_autor = :id_autor")
-            parametros["id_autor"] = id_autor
+#         if id_autor != None:
+#             alteracoes.append("ID_autor = :id_autor")
+#             parametros["id_autor"] = id_autor
 
-        if preco != None:
-            alteracoes.append("Preco = :preco")
-            parametros["preco"] = preco
+#         if preco != None:
+#             alteracoes.append("Preco = :preco")
+#             parametros["preco"] = preco
 
-        if genero != None:
-            alteracoes.append("Genero = :genero")
-            parametros["genero"] = genero
+#         if genero != None:
+#             alteracoes.append("Genero = :genero")
+#             parametros["genero"] = genero
 
-        query = f"UPDATE LIVRO SET {', '.join(alteracoes)} WHERE ID_livro = :id_livro"
+#         query = f"UPDATE LIVRO SET {', '.join(alteracoes)} WHERE ID_livro = :id_livro"
 
-        cur.execute(query, parametros)
-        con.commit()
-        return{"Message": "Livro alterado com sucesso"}
+#         cur.execute(query, parametros)
+#         con.commit()
+#         return{"Message": "Livro alterado com sucesso"}
     
-    except KeyError:
-        return {"Message": f"Erro ao alterar o livro: ID não encontrado"}
+#     except KeyError:
+#         return {"Message": f"Erro ao alterar o livro: ID não encontrado"}
 
 
 def deleta_livro():
