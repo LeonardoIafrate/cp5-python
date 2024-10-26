@@ -42,13 +42,20 @@ def altera_autor(id_autor: int, nome_autor: str):
         return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
 
 
-def exclui_autor():
-    id_autor = input("Digite o ID do autor: ")
-    nome_autor = cur.execute("SELECT NOME FROM AUTOR WHERE ID_AUTOR = :id_autor", {"id_autor": id_autor})
-    confirmacao = input(f"Você tem certeza que deseja excluir o autor {nome_autor}? (S/N)").upper()
-    if confirmacao == "S":
-        cur.execute("DELETE FROM AUTOR WHERE ID_autor = :id_autor", id_autor)
-    elif confirmacao == "N":
-        print("Operação cancelada!")
+def exclui_autor(id_autor: int):
+    cur.execute("SELECT * FROM AUTOR WHERE ID_autor = :id_autor", {"id_autor": id_autor})
+    autor = cur.fetchone()
+    if autor is None: 
+        raise HTTPException(status_code=404, detail="Autor não encontrado")
+    
+    try:
+        cur.execute(
+        """
+        DELETE FROM AUTOR WHERE ID_autor = :id_autor
+        """, {"id_autor":id_autor})
+        con.commit()
+        return {"Message":"Autor excluido com sucesso"}
+    except Exception as e:
+        return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
 
         
