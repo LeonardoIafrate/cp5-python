@@ -89,3 +89,27 @@ def excluir_venda():
         print("Erro ao excluir venda: ", e)
 
 
+def relatorio_venda(): 
+    try:
+        id_venda = input("Digite o ID da venda para gerar o relatório: ")
+        
+        cur.execute('''
+        SELECT 
+            v.ID_VENDA, 
+            v.NOME_CLIENTE, 
+            TO_CHAR(v.DATA_VENDA, 'YYYY-MM-DD') AS DATA_VENDA, 
+            l.ID_LIVRO, 
+            l.TITULO,
+            vl.QUANTIDADE,
+            l.PRECO * vl.QUANTIDADE AS VALOR_TOTAL
+        FROM 
+            Venda v
+        JOIN 
+            Venda_Livros vl ON v.ID_VENDA = vl.ID_VENDA
+        JOIN 
+            Livro l ON vl.ID_LIVRO = l.ID_LIVRO
+        WHERE 
+            v.ID_VENDA = :id_venda
+        ''', {"id_venda": id_venda})
+    except KeyError as e:
+        print("Erro ao exibir relatorio de venda: ", e)
