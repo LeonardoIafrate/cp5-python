@@ -53,22 +53,16 @@ def cadastrar_livro(titulo_livro: str, qnt_pag: int, id_autor: int, preco: float
 #         return {"Message": f"Erro ao alterar o livro: ID não encontrado"}
 
 
-def deleta_livro():
+def deleta_livro(id_livro: int):
     try:
-        id_livro = input("Digite o id do livro que deseja excluir: ")
         cur.execute("SELECT Titulo FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
         livro = cur.fetchone()
-        confirmacao = input(f"Tem certeza que deseja excluir o livro {livro}? (S/N)").upper()
         if livro:
-            if confirmacao == "S":
-                exclui = cur.execute(
-                    """
-                    DELETE FROM LIVRO WHERE ID_livro = :id_livro
-                    """, {"id_livro": id_livro})
-                if exclui:
-                    print("Livro excluido com sucesso.")
-            elif confirmacao == "N":
-                print("Operação cancelada.")
-        raise KeyError("Livro não cadastrado.")
-    except KeyError as e:
-        print("Erro ao excluir livro: ", e)
+            cur.execute(
+            """
+            DELETE FROM LIVRO WHERE ID_livro = :id_livro
+            """, {"id_livro": id_livro})
+            con.commit()
+            return {"Message": "Livro excluído com sucesso"}
+    except KeyError:
+        return {"Message": "Livro não cadastrado"}
