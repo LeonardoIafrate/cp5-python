@@ -110,11 +110,9 @@ async def update_livro(id_livro: int, livro: UpdateLivro):
     except Exception as e:
         return {"Message": "Erro ao alterar livro", "Error": str(e)}
     
-#colocar a parte do delet do livro aqui e apagaro comentario dps
-
-
-######
-
+@app.delete("/deleta-livro/{id_livro}")
+async def delet_livro(id_livro: int):
+    deleta_livro(id_livro)
 
 @app.get("/get-autor/{id_autor}")
 async def get_autor(id_autor: int):
