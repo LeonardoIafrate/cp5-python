@@ -4,7 +4,7 @@ from typing import Optional
 from bd_livraria.connection import *
 from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
-from bd_livraria.estoque import adiciona_estoque, remove_estoque
+from bd_livraria.estoque import adiciona_estoque, remove_estoque, total_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
 
 app = FastAPI()
@@ -110,7 +110,7 @@ async def update_livro(id_livro: int, livro: UpdateLivro):
     except Exception as e:
         return {"Message": "Erro ao alterar livro", "Error": str(e)}
     
-#colocar a parte do delet aqui
+#colocar a parte do delet do livro aqui e apagaro comentario dps
 
 
 ######
@@ -172,3 +172,8 @@ async def adiciona_ao_estoque(id_livro: int, qnt: int):
 async def remove_do_estoque(id_livro: int, qnt: int):
     resultado = remove_estoque(id_livro, qnt)
     return resultado
+
+@app.get("/total-estoque")
+def total_livros_estoque():
+    resultado = total_estoque()
+    return {"Message" : f"Quantidade total de livros no estoque: {resultado}"}

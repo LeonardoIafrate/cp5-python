@@ -67,8 +67,6 @@ def remove_quantidade(id_livro: int, qnt: int):
         con.commit()
         return {"Message": "Quantidade removida com sucesso!"}
     
-    
-
 
 def remove_estoque(id_livro: int, qnt: int):
     cur.execute("SELECT ID_livro FROM ESTOQUE WHERE ID_livro = :id_livro", {"id_livro": id_livro})
