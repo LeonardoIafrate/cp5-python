@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from datetime import datetime
+from typing import Optional, List
 from bd_livraria.connection import *
 from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
 from bd_livraria.estoque import adiciona_estoque, remove_estoque, total_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
+# from bd_livraria.venda import cadastra_venda, cadastra_venda_livro
+
 
 app = FastAPI()
 
@@ -25,6 +28,63 @@ class UpdateLivro(BaseModel):
 
 class Autor(BaseModel):
     nome: str
+
+class LivroVenda(BaseModel):
+    id_livro: int
+    quantidade: int
+
+class VendaRequest(BaseModel):
+    nome_cliente: str
+    livros: list[LivroVenda]
+
+@app.post("/cadastrar_venda/")
+async def cadastrar_venda(venda_request: VendaRequest):
+    try:
+        response = cadastra_venda_e_livros(venda_request.nome_cliente, venda_request.livros)
+        return response
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+def cadastra_venda_e_livros(nome_cliente: str, livros: list):
+    data_venda = datetime.now().strftime("%d-%m-%Y")
+    id_venda = cur.var(oracledb.NUMBER)
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO VENDA(DATA_VENDA, NOME_CLIENTE)
+            VALUES (TO_DATE(:DATA_VENDA, 'DD-MM-YYYY'), :NOME_CLIENTE)
+            RETURNING ID_VENDA INTO :id_venda
+            """, 
+            {"DATA_VENDA": data_venda, "NOME_CLIENTE": nome_cliente, "id_venda": id_venda}
+        )
+        con.commit()
+        
+        id_venda = id_venda.getvalue()[0]
+
+        for livro in livros:
+            id_livro = livro.id_livro
+            quantidade = livro.quantidade
+            cadastra_venda_livro(id_venda, id_livro, quantidade)
+
+        return {"Message": f"Venda cadastrada com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
+        
+
+def cadastra_venda_livro(id_venda: int, id_livro: int, qnt: int):
+    cur.execute(
+        """
+        INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
+        VALUES (:ID_VENDA, :ID_LIVRO, :QUANTIDADE)
+        """, 
+        {"ID_VENDA": id_venda, "ID_LIVRO": id_livro, "QUANTIDADE": qnt}
+    )
+    con.commit()
 
 
 @app.get("/get-livro/{id_livro}")
@@ -109,10 +169,12 @@ async def update_livro(id_livro: int, livro: UpdateLivro):
         return {"Message": "Livro alterado com sucesso!"}
     except Exception as e:
         return {"Message": "Erro ao alterar livro", "Error": str(e)}
-    
+
+
 @app.delete("/deleta-livro/{id_livro}")
 async def delet_livro(id_livro: int):
     deleta_livro(id_livro)
+
 
 @app.get("/get-autor/{id_autor}")
 async def get_autor(id_autor: int):
@@ -166,10 +228,12 @@ async def adiciona_ao_estoque(id_livro: int, qnt: int):
     resultado = adiciona_estoque(id_livro, qnt)
     return resultado
 
+
 @app.put("/remove-estoque/{id_livro}")
 async def remove_do_estoque(id_livro: int, qnt: int):
     resultado = remove_estoque(id_livro, qnt)
     return resultado
+
 
 @app.get("/total-estoque")
 def total_livros_estoque():

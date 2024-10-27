@@ -83,15 +83,14 @@ def remove_estoque(id_livro: int, qnt: int):
         return{"Error": f"Erro ao remover do estoque, {str(e)}"}
     
 def relatorio_estoque():
-    cur.execute('''
+    cur.execute("""
     SELECT 
     l.ID_LIVRO, 
     l.TITULO, 
     NVL(e.QNT_ESTOQUE, 0) AS QNT_ESTOQUE,  -- Usa NVL para exibir 0 se a quantidade em estoque for NULL
     l.PRECO,
     NVL(e.QNT_ESTOQUE, 0) * l.PRECO AS VALOR_TOTAL  -- Cálculo do valor total em estoque
-FROM 
-    Livro l
-LEFT JOIN 
-    Estoque e ON l.ID_LIVRO = e.ID_LIVRO;
-''')
+    FROM Livro l
+    LEFT JOIN 
+        Estoque e ON l.ID_LIVRO = e.ID_LIVRO;
+    """)

@@ -1,4 +1,3 @@
-import json
 from fastapi import HTTPException
 import oracledb
 from bd_livraria.connection import *
@@ -8,15 +7,17 @@ con = connection
 cur = con.cursor()
 
 
-def cadastrar_autor():
-    nome_autor = input("Digite o nome do autor: ")
-    cur.execute(
-    """
-    INSERT INTO AUTOR(Nome)
-    VALUES (:nome)
-    """, {"nome": nome_autor}
-    )
-    con.commit()
+def cadastrar_autor(id_autor: int, nome_autor: str):
+    try:
+        cur.execute(
+        """
+        INSERT INTO AUTOR(Nome)
+        VALUES (:nome)
+        """, {"nome": nome_autor}
+        )
+        con.commit()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar autor: {str(e)}")
 
 
 def mostra_autor():
@@ -56,6 +57,6 @@ def exclui_autor(id_autor: int):
         con.commit()
         return {"Message":"Autor excluido com sucesso"}
     except Exception as e:
-        return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
+        return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
 
         
