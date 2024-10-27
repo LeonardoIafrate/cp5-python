@@ -215,9 +215,10 @@ async def update_autor(id_autor: int, autor: Autor):
     resultado = altera_autor(id_autor, autor.nome )
     return resultado
 
-#colocar o altera autor aqui e apagar comentario dps
-
-#####
+@app.post("/cadastrar-autor/")
+async def criar_novo_autor(autor: Autor):
+    cadastro = cadastrar_autor(autor.nome)
+    return cadastro
 
 #colocar exclui autor aqui e apagar comentario dps
 
