@@ -3,25 +3,6 @@ import oracledb
 from datetime import datetime
 from fastapi import HTTPException
 from bd_livraria.connection import *
-
-
-def altera_venda_livro(id_venda: int, id_livro: int, novo_id_livro : int, quantidade: int):
-    cur.execute("SELECT * FROM VENDA_LIVROS WHERE ID_VENDA = :id_venda", {"id_venda": id_venda})
-    venda = cur.fetchone()
-    
-    if venda is None:
-        raise HTTPException(status_code=404, detail="Venda não encontrado")
-    
-    try:
-        cur.execute(
-        """
-        UPDATE VENDA_LIVROS SET ID_LIVRO = :novo_id_livro, QUANTIDADE = :quantidade WHERE ID_VENDA = :id_venda and ID_LIVRO = :id_livro
-        """, {"id_venda": id_venda, "novo_id_livro": novo_id_livro,"id_livro": id_livro, "quantidade": quantidade}
-        )
-        con.commit()
-        return {"Message": "Venda livro alterada com sucesso"}
-    except Exception as e:
-        return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
     
     
 def altera_venda(id_venda: int, data_venda: int, nome_cliente: str):
@@ -66,15 +47,13 @@ def excluir_venda():
         print("Erro ao excluir venda: ", e)
 
 
-def relatorio_venda(): 
+def relatorio_venda(id_venda: int): 
     try:
-        id_venda = input("Digite o ID da venda para gerar o relatório: ")
-        
-        cur.execute('''
+        cur.execute("""
         SELECT 
             v.ID_VENDA, 
             v.NOME_CLIENTE, 
-            TO_CHAR(v.DATA_VENDA, 'YYYY-MM-DD') AS DATA_VENDA, 
+            TO_CHAR(v.DATA_VENDA, 'DD-MM-YYYY') AS DATA_VENDA, 
             l.ID_LIVRO, 
             l.TITULO,
             vl.QUANTIDADE,
@@ -87,6 +66,28 @@ def relatorio_venda():
             Livro l ON vl.ID_LIVRO = l.ID_LIVRO
         WHERE 
             v.ID_VENDA = :id_venda
-        ''', {"id_venda": id_venda})
+        """, {"id_venda": id_venda})
+        items = cur.fetchall()
+        
+        
+        relatorio = []
+        valor_total = 0
+        for item in items:
+            relatorio_dict = {
+                "ID da venda ": item[0],
+                "Nome do cliete": item[1],
+                "Data da venda": item[2],
+                "ID do livro": item[3],
+                "Título do livro": item[4],
+                "Quantidade vendida": item[5],
+                "Valor total do livro na venda": f"R${item[6]:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')}
+            relatorio.append(relatorio_dict)
+            valor_total += item[6]
+        return {
+            "relatorio": relatorio,
+            "Valor total da venda": f"R${valor_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+        }
+
+
     except KeyError as e:
         print("Erro ao exibir relatorio de venda: ", e)

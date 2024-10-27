@@ -7,7 +7,7 @@ from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
 from bd_livraria.estoque import adiciona_estoque, remove_estoque, total_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
-# from bd_livraria.venda import cadastra_venda, cadastra_venda_livro
+from bd_livraria.venda import relatorio_venda
 
 
 app = FastAPI()
@@ -191,9 +191,14 @@ async def remove_do_estoque(id_livro: int, qnt: int):
 
 
 @app.get("/total-estoque")
-def total_livros_estoque():
+async def total_livros_estoque():
     resultado = total_estoque()
     return {"Message" : f"Quantidade total de livros no estoque: {resultado}"}
+
+@app.get("/relatorio-venda/{id_venda}")
+async def sale_report(id_venda: int):
+    resultado = relatorio_venda(id_venda)
+    return resultado
 
 @app.post("/cadastrar_venda/")
 async def cadastrar_venda(venda_request: VendaRequest):
@@ -206,7 +211,7 @@ async def cadastrar_venda(venda_request: VendaRequest):
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 
-def cadastra_venda_livros(nome_cliente: str, livros: list):
+async def cadastra_venda_livros(nome_cliente: str, livros: list):
     data_venda = datetime.now().strftime("%d-%m-%Y")
     id_venda = cur.var(oracledb.NUMBER)
 
@@ -234,7 +239,7 @@ def cadastra_venda_livros(nome_cliente: str, livros: list):
         raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
         
 
-def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
+async def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
     cur.execute(
         """
         INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
@@ -245,7 +250,7 @@ def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
     con.commit()
 
 @app.put("/altera-venda-livro/{id_venda}")
-def update_venda_livro(id_venda: int, id_livro: int, lvenda: UpdateLivroVenda):
+async def update_venda_livro(id_venda: int, id_livro: int, lvenda: UpdateLivroVenda):
     cur.execute("SELECT ID_VENDA FROM VENDA WHERE ID_VENDA = :id_venda", {"id_venda": id_venda})
     venda_cadastrada = cur.fetchone()
 
