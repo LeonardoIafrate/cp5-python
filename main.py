@@ -7,7 +7,7 @@ from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
 from bd_livraria.estoque import adiciona_estoque, remove_estoque, total_estoque
 from bd_livraria.genero import cadastra_genero, exclui_genero, altera_genero
-from bd_livraria.venda import relatorio_venda
+from bd_livraria.venda import relatorio_venda, excluir_venda
 
 
 app = FastAPI()
@@ -205,13 +205,14 @@ async def cadastrar_venda(venda_request: VendaRequest):
     try:
         response = cadastra_venda_livros(venda_request.nome_cliente, venda_request.livros)
         return response
-    except HTTPException as e:
-        raise e
+    except oracledb.IntegrityError:
+        con.rollback()
+        return {"Error": f"Livro não encontrado"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
 
 
-async def cadastra_venda_livros(nome_cliente: str, livros: list):
+def cadastra_venda_livros(nome_cliente: str, livros: list):
     data_venda = datetime.now().strftime("%d-%m-%Y")
     id_venda = cur.var(oracledb.NUMBER)
 
@@ -236,10 +237,11 @@ async def cadastra_venda_livros(nome_cliente: str, livros: list):
         return {"Message": f"Venda cadastrada com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
 
     except ValueError as e:
+        con.rollback()
         raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
         
 
-async def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
+def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
     cur.execute(
         """
         INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
