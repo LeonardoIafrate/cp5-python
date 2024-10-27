@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from bd_livraria.connection import *
 from bd_livraria.livro import cadastrar_livro, deleta_livro
 from bd_livraria.autor import cadastrar_autor, altera_autor, exclui_autor
@@ -37,55 +37,9 @@ class VendaRequest(BaseModel):
     nome_cliente: str
     livros: list[LivroVenda]
 
-@app.post("/cadastrar_venda/")
-async def cadastrar_venda(venda_request: VendaRequest):
-    try:
-        response = cadastra_venda_e_livros(venda_request.nome_cliente, venda_request.livros)
-        return response
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
-
-
-def cadastra_venda_e_livros(nome_cliente: str, livros: list):
-    data_venda = datetime.now().strftime("%d-%m-%Y")
-    id_venda = cur.var(oracledb.NUMBER)
-
-    try:
-        cur.execute(
-            """
-            INSERT INTO VENDA(DATA_VENDA, NOME_CLIENTE)
-            VALUES (TO_DATE(:DATA_VENDA, 'DD-MM-YYYY'), :NOME_CLIENTE)
-            RETURNING ID_VENDA INTO :id_venda
-            """, 
-            {"DATA_VENDA": data_venda, "NOME_CLIENTE": nome_cliente, "id_venda": id_venda}
-        )
-        con.commit()
-        
-        id_venda = id_venda.getvalue()[0]
-
-        for livro in livros:
-            id_livro = livro.id_livro
-            quantidade = livro.quantidade
-            cadastra_venda_livro(id_venda, id_livro, quantidade)
-
-        return {"Message": f"Venda cadastrada com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
-        
-
-def cadastra_venda_livro(id_venda: int, id_livro: int, qnt: int):
-    cur.execute(
-        """
-        INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
-        VALUES (:ID_VENDA, :ID_LIVRO, :QUANTIDADE)
-        """, 
-        {"ID_VENDA": id_venda, "ID_LIVRO": id_livro, "QUANTIDADE": qnt}
-    )
-    con.commit()
-
+class UpdateLivroVenda(BaseModel):
+    id_livro: Optional[int] = None
+    quantidade: Optional[int] = None
 
 @app.get("/get-livro/{id_livro}")
 async def get_livro(id_livro: int):
@@ -240,3 +194,81 @@ async def remove_do_estoque(id_livro: int, qnt: int):
 def total_livros_estoque():
     resultado = total_estoque()
     return {"Message" : f"Quantidade total de livros no estoque: {resultado}"}
+
+@app.post("/cadastrar_venda/")
+async def cadastrar_venda(venda_request: VendaRequest):
+    try:
+        response = cadastra_venda_livros(venda_request.nome_cliente, venda_request.livros)
+        return response
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+
+
+def cadastra_venda_livros(nome_cliente: str, livros: list):
+    data_venda = datetime.now().strftime("%d-%m-%Y")
+    id_venda = cur.var(oracledb.NUMBER)
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO VENDA(DATA_VENDA, NOME_CLIENTE)
+            VALUES (TO_DATE(:DATA_VENDA, 'DD-MM-YYYY'), :NOME_CLIENTE)
+            RETURNING ID_VENDA INTO :id_venda
+            """, 
+            {"DATA_VENDA": data_venda, "NOME_CLIENTE": nome_cliente, "id_venda": id_venda}
+        )
+        con.commit()
+        
+        id_venda = id_venda.getvalue()[0]
+
+        for livro in livros:
+            id_livro = livro.id_livro
+            quantidade = livro.quantidade
+            cadastra_venda(id_venda, id_livro, quantidade)
+
+        return {"Message": f"Venda cadastrada com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
+        
+
+def cadastra_venda(id_venda: int, id_livro: int, qnt: int):
+    cur.execute(
+        """
+        INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
+        VALUES (:ID_VENDA, :ID_LIVRO, :QUANTIDADE)
+        """, 
+        {"ID_VENDA": id_venda, "ID_LIVRO": id_livro, "QUANTIDADE": qnt}
+    )
+    con.commit()
+
+@app.put("/altera-venda-livro/{id_venda}")
+def update_venda_livro(id_venda: int, id_livro: int, lvenda: UpdateLivroVenda):
+    cur.execute("SELECT ID_VENDA FROM VENDA WHERE ID_VENDA = :id_venda", {"id_venda": id_venda})
+    venda_cadastrada = cur.fetchone()
+
+    if venda_cadastrada is None:
+        raise HTTPException(status_code=404, detail="Venda não encontrada")
+    
+    cur.execute("SELECT ID_LIVRO FROM VENDA_LIVROS WHERE ID_VENDA = :id_venda AND ID_LIVRO = :id_livro", {"id_venda": id_venda, "id_livro": id_livro})
+    venda_livro_cadastrada = cur.fetchone()
+
+    if venda_livro_cadastrada is None:
+        raise HTTPException(status_code=404, detail="Este livro não faz parte dessa venda")
+    
+    try:
+        if lvenda.id_livro != None:
+            cur.execute("UPDATE VENDA_LIVROS SET ID_LIVRO = :new_id_livro WHERE ID_LIVRO = :id_livro AND ID_VENDA = :id_venda", {"new_id_livro": lvenda.id_livro, "id_livro": id_livro, "id_venda": id_venda})
+        
+        if lvenda.quantidade != None:
+            cur.execute("UPDATE VENDA_LIVROS SET QUANTIDADE = :quantidade WHERE ID_LIVRO = :id_livro AND ID_VENDA = :id_venda", {"quantidade": lvenda.quantidade, "id_livro": id_livro, "id_venda": id_venda})
+        con.commit()
+        
+        return {"Message": "Livro da venda alterado com sucesso"}
+    except oracledb.IntegrityError:
+        return {"Error": "Livro não cadastrado"}
+    except Exception as e:
+        return {"Error": f"Erro ao alterar livro {str(e)}"}
+    

@@ -4,98 +4,19 @@ from datetime import datetime
 from fastapi import HTTPException
 from bd_livraria.connection import *
 
-def cadastra_venda_e_livros(nome_cliente: str, livros: list):
-    data_venda = datetime.now().strftime("%d-%m-%Y")
-    id_venda = cur.var(int)
 
-    try:
-        # Cadastra a venda
-        cur.execute(
-            """
-            INSERT INTO VENDA(DATA_VENDA, NOME_CLIENTE)
-            VALUES (TO_DATE(:DATA_VENDA, 'DD-MM-YYYY'), :NOME_CLIENTE)
-            RETURNING ID_VENDA INTO :id_venda
-            """, 
-            {"DATA_VENDA": data_venda, "NOME_CLIENTE": nome_cliente, "id_venda": id_venda}
-        )
-        id_venda = id_venda.getvalue()
-        con.commit()
-
-        # Cadastra os livros da venda
-        for livro in livros:
-            id_livro = livro['id_livro']
-            quantidade = livro['quantidade']
-            cadastra_venda_livro(id_venda, id_livro, quantidade)
-
-        return {"Message": f"Venda cadastrada com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
-
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda: {str(e)}")
-
-
-def cadastra_venda_livro(id_venda: int, id_livro: int, qnt: int):
-    cur.execute(
-        """
-        INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
-        VALUES (:ID_VENDA, :ID_LIVRO, :QUANTIDADE)
-        """, 
-        {"ID_VENDA": id_venda, "ID_LIVRO": id_livro, "QUANTIDADE": qnt}
-    )
-    con.commit()
-
-
-# def cadastra_venda(nome_cliente: str, num_livros: int):
-    
-
-#     id_livro = int 
-#     qnt = int
-#     data_venda = datetime.now().strftime("%d-%m-%Y")
-#     id_venda = cur.var(int)
-
-#     try:
-#         cur.execute(
-#         """
-#         INSERT INTO VENDA(DATA_VENDA, NOME_CLIENTE)
-#         VALUES (TO_DATE(:DATA_VENDA, 'DD-MM-YYYY'), :NOME_CLIENTE)
-#         RETURNING ID_VENDA INTO :id_venda
-#         """, {"DATA_VENDA": data_venda, "NOME_CLIENTE": nome_cliente, "id_venda": id_venda}
-#         )
-#         id_venda = id_venda.getvalue()
-#         con.commit()
-#         for livros in range(num_livros):
-#             cur.execute(
-#             """
-#             INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
-#             VALUES (:id_venda, :id_livro, :qnt)
-#             """, {"id_venda": id_venda, "id_livro": id_livro, "qnt": qnt})
-#         # return{"Message": f"Venda cadastrado com sucesso, ID da venda: {id_venda}, data venda: {data_venda}"}
-#         return{"Livros": livros}
-#     except ValueError as e:
-#         raise HTTPException(status_code=400, detail=f"Erro ao cadastrar venda {str(e)}")
-
-
-# def cadastra_venda_livro(id_venda: int, id_livro: int, qnt: int):
-#     cur.execute(
-#     """
-#     INSERT INTO VENDA_LIVROS(ID_VENDA, ID_LIVRO, QUANTIDADE)
-#     VALUES (:ID_VENDA, :ID_LIVRO, :QUANTIDADE)
-#     """, {"ID_VENDA": id_venda, "ID_LIVRO": id_livro, "QUANTIDADE": qnt}
-#     )
-#     con.commit()
-#     return{"Message": "Venda finalizada com sucesso!"}
-
-def altera_venda_livro(id_venda: int, id_livro: int, quantidade: int):
+def altera_venda_livro(id_venda: int, id_livro: int, novo_id_livro : int, quantidade: int):
     cur.execute("SELECT * FROM VENDA_LIVROS WHERE ID_VENDA = :id_venda", {"id_venda": id_venda})
     venda = cur.fetchone()
     
     if venda is None:
-        raise HTTPException(status_code=404, detail="venda livro não encontrado")
+        raise HTTPException(status_code=404, detail="Venda não encontrado")
     
     try:
         cur.execute(
         """
-        UPDATE VENDA_LIVROS SET id_venda = :id_venda, id_livro = :id_livro, quantidade = :quantidade WHERE ID_VENDA = :id_venda
-        """, {"id_venda": id_venda, "id_livro": id_livro, "quantidade": quantidade}
+        UPDATE VENDA_LIVROS SET ID_LIVRO = :novo_id_livro, QUANTIDADE = :quantidade WHERE ID_VENDA = :id_venda and ID_LIVRO = :id_livro
+        """, {"id_venda": id_venda, "novo_id_livro": novo_id_livro,"id_livro": id_livro, "quantidade": quantidade}
         )
         con.commit()
         return {"Message": "Venda livro alterada com sucesso"}

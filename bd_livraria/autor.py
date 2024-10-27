@@ -7,19 +7,6 @@ con = connection
 cur = con.cursor()
 
 
-def cadastrar_autor(id_autor: int, nome_autor: str):
-    try:
-        cur.execute(
-        """
-        INSERT INTO AUTOR(Nome)
-        VALUES (:nome)
-        """, {"nome": nome_autor}
-        )
-        con.commit()
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao cadastrar autor: {str(e)}")
-
-
 def mostra_autor():
     nome_autor = input("Digite o nome do autor: ")
     cur.execute("SELECT * FROM AUTOR WHERE Nome = :nome", {"nome": nome_autor})
@@ -35,7 +22,7 @@ def cadastrar_autor(nome: str):
         )
         con.commit()
     except oracledb.DatabaseError as e:
-        return{"Error": f"Erro ao cadastrar autor {str(e)}"}
+        return{"Error": f"Erro ao cadastrar autor {str(e)}"}
 
 
 def altera_autor(id_autor: int, nome_autor: str):
