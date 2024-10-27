@@ -29,6 +29,9 @@ class UpdateLivro(BaseModel):
 class Autor(BaseModel):
     nome: str
 
+class Genero(BaseModel):
+    genero: str
+
 class LivroVenda(BaseModel):
     id_livro: int
     quantidade: int
@@ -128,6 +131,11 @@ async def update_livro(id_livro: int, livro: UpdateLivro):
 @app.delete("/deleta-livro/{id_livro}")
 async def delet_livro(id_livro: int):
     deleta_livro(id_livro)
+
+@app.post("/genero-livro/{genero}")
+async def post_genero(genero: str):
+    result = cadastra_genero(genero)
+    return result
 
 
 @app.get("/get-autor/{id_autor}")
