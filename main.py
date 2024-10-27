@@ -280,3 +280,7 @@ async def update_venda_livro(id_venda: int, id_livro: int, lvenda: UpdateLivroVe
     except Exception as e:
         return {"Error": f"Erro ao alterar livro {str(e)}"}
     
+@app.delete("/exclui-venda/{id_venda}")
+async def delete_venda(id_venda: int):
+    result = excluir_venda(id_venda)
+    return result
