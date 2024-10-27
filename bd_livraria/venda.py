@@ -23,28 +23,25 @@ def altera_venda(id_venda: int, data_venda: int, nome_cliente: str):
     except Exception as e:
         return {"Erro": f"Um erro inesperado aconteceu, {str(e)}"}
 
-def excluir_venda():
+def excluir_venda(id_venda: int):
     try:
-        Id_venda = input("Digite o id da venda que deseja excluir: ")
-        confirmacao = input(f"Tem certeza que deseja excluir a venda {Id_venda}? (S/N)").upper
-        cur.execute("SELECT ID_VENDA FROM VENDA WHERE ID_VENDA = :ID_VENDA", {"ID_VENDA": Id_venda})
+        cur.execute("SELECT ID_VENDA FROM VENDA WHERE ID_VENDA = :ID_VENDA", {"ID_VENDA": id_venda})
         listar_venda = cur.fetchone()
         if listar_venda:
-            if confirmacao == "S":
-                cur.execute(
-                """
-                DELETE FROM VENDA WHERE ID_VENDA = :id_venda
-                """, {"id_venda": Id_venda})
-                cur.execute(
-                """
-                DELETE FROM VENDA_LIVRO WHERE ID_VENDA = :id_venda
-                """, {"id_venda": Id_venda})
-                con.commit()
-            elif confirmacao == "N":
-                print("Operação cancelada!")
-        raise KeyError("venda não cadastrada")
-    except KeyError as e:
-        print("Erro ao excluir venda: ", e)
+            cur.execute(
+            """
+            DELETE FROM VENDA_LIVROS WHERE ID_VENDA = :id_venda
+            """, {"id_venda": id_venda})
+            cur.execute(
+            """
+            DELETE FROM VENDA WHERE ID_VENDA = :id_venda
+            """, {"id_venda": id_venda})
+            con.commit()
+            return {"Message": "Venda excluída com sucesso"}
+        else:
+            return{"Error": "Venda não cadastrada"}
+    except oracledb.IntegrityError as e:
+            return {"Error": f"Erro ao excluir venda: {str(e)}"}
 
 
 def relatorio_venda(id_venda: int): 
