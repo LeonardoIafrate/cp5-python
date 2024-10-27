@@ -174,9 +174,10 @@ async def criar_novo_autor(autor: Autor):
     cadastro = cadastrar_autor(autor.nome)
     return cadastro
 
-#colocar exclui autor aqui e apagar comentario dps
-
-###
+@app.delete("/delet-autor/{id_autor}")
+async def delet_autor(id_autor: int):
+    resultado = exclui_autor(id_autor)
+    return resultado
 
 @app.put("/adiciona-estoque/{id_livro}")
 async def adiciona_ao_estoque(id_livro: int, qnt: int):
