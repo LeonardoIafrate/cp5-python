@@ -24,6 +24,20 @@ def mostra_autor():
     nome_autor = input("Digite o nome do autor: ")
     cur.execute("SELECT * FROM AUTOR WHERE Nome = :nome", {"nome": nome_autor})
 
+
+def cadastrar_autor(nome: str):
+    try:
+        cur.execute(
+        """
+        INSERT INTO AUTOR(Nome)
+        VALUES (:nome)
+        """, {"nome": nome}
+        )
+        con.commit()
+    except oracledb.DatabaseError as e:
+        return{"Error": f"Erro ao cadastrar autor {str(e)}"}
+
+
 def altera_autor(id_autor: int, nome_autor: str):
     cur.execute("SELECT * FROM AUTOR WHERE ID_autor = :id_autor", {"id_autor": id_autor})
     autor = cur.fetchone()
