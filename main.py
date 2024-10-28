@@ -137,6 +137,10 @@ async def post_genero(genero: str):
     result = cadastra_genero(genero)
     return result
 
+@app.put("/put-genero/{genero}")
+async def put_genero(genero: str, novo_genero: str):
+    result = altera_genero(genero, novo_genero)
+    return result
 
 @app.get("/get-autor/{id_autor}")
 async def get_autor(id_autor: int):
