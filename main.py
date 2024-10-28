@@ -301,3 +301,28 @@ async def update_venda_livro(id_venda: int, id_livro: int, lvenda: UpdateLivroVe
 async def delete_venda(id_venda: int):
     result = excluir_venda(id_venda)
     return result
+
+@app.get("/recomendacao-genero/{genero}")
+async def recomendacao(genero: str):
+    genero = f"%{genero.upper()}%"
+ 
+    cur.execute("SELECT ID_livro, Titulo, Qnt_pag FROM LIVRO WHERE GENERO LIKE :genero", {"genero": genero})
+    recomendacoes = cur.fetchall()
+   
+    if not recomendacoes:
+        raise HTTPException(status_code=404, detail="Nenhum livro encontrado para o gênero fornecido.")
+ 
+    try:
+ 
+        livros_encontrados = []
+        for livro in recomendacoes:
+            recomendacoes_dict = {
+                "ID do livro": livro[0],
+                "Genero livro": livro[1],
+                "Quantidade de páginas": livro[2]
+            }
+            livros_encontrados.append(recomendacoes_dict)
+        return {"Recomendações": livros_encontrados}
+ 
+    except Exception as e:
+        return {"Error": str(e)}

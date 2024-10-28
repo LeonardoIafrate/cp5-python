@@ -49,8 +49,8 @@ def adiciona_estoque(id_livro: int, qnt: int):
                 con.commit()
                 adiciona_quantidade(id_livro, qnt)
                 return {"Message": "Quantidade adicionada com sucesso!"}
-    except KeyError as e:
-        print("Erro ao adicionar estoque: ", e)
+    except Exception as e:
+        return{"Error": f"Erro ao cadastrar o livro {str(e)}"}
 
 
 def remove_quantidade(id_livro: int, qnt: int):
@@ -79,7 +79,7 @@ def remove_estoque(id_livro: int, qnt: int):
         if livro_cadastrado:
             remove_quantidade(id_livro,qnt)
             return{"Message": "Quantidade removida com sucesso"}
-    except KeyError as e:
+    except Exception as e:
         return{"Error": f"Erro ao remover do estoque, {str(e)}"}
     
 def relatorio_estoque():
