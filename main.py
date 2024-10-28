@@ -142,6 +142,11 @@ async def put_genero(genero: str, novo_genero: str):
     result = altera_genero(genero, novo_genero)
     return result
 
+@app.delete("/delet-genero/{genero}")
+async def delet_genero(genero: str):
+    result = exclui_genero(genero)
+    return result
+
 @app.get("/get-autor/{id_autor}")
 async def get_autor(id_autor: int):
     cur.execute("SELECT * FROM AUTOR WHERE ID_autor = :id_autor", {"id_autor": id_autor})
