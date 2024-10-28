@@ -42,7 +42,24 @@ def altera_genero(genero_livro: str, novo_genero: str):
 
     except oracledb.IntegrityError as e:
         return {"Error": f"Erro ao alterar o livro {str(e)}"}
+    
+    
+def exclui_genero(genero_livro: str):
+    genero_livro = genero_livro.upper()
+    cur.execute("SELECT GENERO FROM GENERO WHERE Genero = :genero", {"genero": genero_livro})
+    genero_existe = cur.fetchone()
+    
+    if genero_existe is None:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    
+    try:
+        cur.execute(
+        """
+        DELETE FROM GENERO WHERE Genero = :genero
+        """, {"genero": genero_livro})
+        con.commit()
+        return{"Message": "Livro excluido com sucesso"}
 
-#Exclui genero aqui 
-#->
-#
+    except oracledb.IntegrityError as e:
+        return {"Error": f"Erro ao alterar o livro {str(e)}"}
+    
