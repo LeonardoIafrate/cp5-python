@@ -67,9 +67,13 @@ async def get_livro(id_livro: int):
 async def mostra_livro(titulo_livro : str):
     titulo = f"%{titulo_livro.upper()}%"
 
+    cur.execute("SELECT * FROM LIVRO WHERE Titulo LIKE :titulo", {"titulo": titulo})
+    livros = cur.fetchall()
+
+    if not livros:
+        raise HTTPException(status_code=404, detail="Nenhum livro encontrado.")
+
     try:
-        cur.execute("SELECT * FROM LIVRO WHERE Titulo LIKE :titulo", {"titulo": titulo})
-        livros = cur.fetchall()
 
         livros_encontrados = []
         for livro in livros:
@@ -83,8 +87,9 @@ async def mostra_livro(titulo_livro : str):
             }
             livros_encontrados.append(livro_dict)
         return {"Livros": livros_encontrados}
-    except HTTPException as e:
-        return{"status_code": "500", "detail": f"Erro ao buscar livro: {str(e)}"}
+    
+    except Exception as e:
+        return{"Error": f"Erro ao procurar livros {str(e)}"}
     
 
 @app.post("/cadastrar-livro/")
@@ -100,6 +105,10 @@ async def cadastrar_novo_livro(livro: Livro):
 
 @app.put("/altera-livro/{id_livro}")
 async def update_livro(id_livro: int, livro: UpdateLivro):
+
+    livro.titulo_livro = livro.titulo_livro.upper()
+    livro.genero = livro.genero.upper()
+
     cur.execute("SELECT ID_livro FROM LIVRO WHERE ID_livro = :id_livro", {"id_livro": id_livro})
     livro_existe = cur.fetchone()
 

@@ -7,12 +7,9 @@ con = connection
 cur = con.cursor()
 
 
-def mostra_autor():
-    nome_autor = input("Digite o nome do autor: ")
-    cur.execute("SELECT * FROM AUTOR WHERE Nome = :nome", {"nome": nome_autor})
-
-
 def cadastrar_autor(nome: str):
+    nome = nome.upper()
+    
     try:
         cur.execute(
         """
@@ -21,11 +18,14 @@ def cadastrar_autor(nome: str):
         """, {"nome": nome}
         )
         con.commit()
+        return {"Message": "Autor cadastrado com sucesso"}
     except oracledb.DatabaseError as e:
         return{"Error": f"Erro ao cadastrar autor {str(e)}"}
 
 
 def altera_autor(id_autor: int, nome_autor: str):
+    nome_autor = nome_autor.upper()
+
     cur.execute("SELECT * FROM AUTOR WHERE ID_autor = :id_autor", {"id_autor": id_autor})
     autor = cur.fetchone()
     
